@@ -12,3 +12,52 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Role {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  slug       String   @db.VarChar(100)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  email      String   @db.VarChar(100)
+  full_name  String   @db.VarChar(100)
+  role_id    Int
+  password   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by String   @db.VarChar(100)
+  updated_by String   @db.VarChar(100)
+
+  role     Role          @relation(fields: [role_id], references: [id])
+  sessions UserSession[]
+
+  @@unique([email])
+  @@map("users")
+}
+
+model UserSession {
+  id                    Int       @id @default(autoincrement())
+  user_id               Int
+  jti                   String    @unique @db.Uuid
+  token                 String
+  refresh_token         String
+  token_expired         DateTime
+  refresh_token_expired DateTime
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  revoked_at            DateTime?
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@unique([token, refresh_token])
+  @@map("user_sessions")
+}
