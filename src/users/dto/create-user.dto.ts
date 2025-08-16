@@ -1,4 +1,5 @@
-import { IsOptional, IsString, Length } from 'class-validator';
+import { Exclude } from 'class-transformer';
+import { IsString, Length } from 'class-validator';
 import { BaseUserDto } from './base-user.dto';
 
 export class CreateUserDto extends BaseUserDto {
@@ -6,6 +7,6 @@ export class CreateUserDto extends BaseUserDto {
   @Length(6, 46)
   password: string;
 
-  // @IsOptional()
+  @Exclude()
   role_id: number;
 }

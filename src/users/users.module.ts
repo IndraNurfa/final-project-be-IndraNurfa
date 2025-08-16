@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { RoleModule } from 'src/role/role.module';
 import { UsersController } from './users.controller';
-import { UserRepository } from './users.repository';
+import { UsersRepository } from './users.repository';
 import { UsersService } from './users.service';
 
 @Module({
@@ -9,7 +9,7 @@ import { UsersService } from './users.service';
   controllers: [UsersController],
   providers: [
     { provide: 'IUsersService', useClass: UsersService },
-    { provide: 'IUsersRepository', useClass: UserRepository },
+    { provide: 'IUsersRepository', useClass: UsersRepository },
   ],
   exports: ['IUsersService', 'IUsersRepository'],
 })
