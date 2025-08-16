@@ -15,7 +15,7 @@ export class UpdateMasterCourtTypeDto {
   name?: string;
 
   @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsNumber()
   @Min(0)
   price?: number;
 }
@@ -26,6 +26,7 @@ export class UpdateMasterCourtDto {
   @MaxLength(255)
   name?: string;
 
+  @IsOptional()
   @Exclude()
   slug?: string;
 
