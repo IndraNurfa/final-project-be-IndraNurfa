@@ -46,8 +46,8 @@ export class AuthService implements IAuthService {
 
     const data = await this.userService.create(dto);
 
-    // Send welcome email
-    // await this.mailService.sendEmail(
+    // TODO: Send welcome email if this failed, just continue
+    // this.mailService.sendEmail(
     //   'Welcome to Our Service',
     //   dto.email,
     //   dto.full_name,
