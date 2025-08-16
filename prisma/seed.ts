@@ -31,8 +31,6 @@ async function main() {
       full_name: 'Admin User',
       password: hashedPassword,
       role_id: roleAdmin.id,
-      created_by: 'seed',
-      updated_by: 'seed',
     },
   });
 
@@ -42,8 +40,6 @@ async function main() {
       full_name: 'Regular User',
       password: hashedPassword,
       role_id: roleUser.id,
-      created_by: 'seed',
-      updated_by: 'seed',
     },
   });
 
@@ -52,8 +48,6 @@ async function main() {
     data: {
       name: 'ALPHA',
       price: 600000,
-      created_by: 'seed',
-      updated_by: 'seed',
     },
   });
 
@@ -61,8 +55,6 @@ async function main() {
     data: {
       name: 'BETA',
       price: 800000,
-      created_by: 'seed',
-      updated_by: 'seed',
     },
   });
 
@@ -73,22 +65,16 @@ async function main() {
         name: 'Alpha Court 1',
         slug: slugify('Alpha Court 1', { lower: true }),
         court_type_id: courtTypeAlpha.id,
-        created_by: 'seed',
-        updated_by: 'seed',
       },
       {
         name: 'Alpha Court 2',
         slug: slugify('Alpha Court 2', { lower: true }),
         court_type_id: courtTypeAlpha.id,
-        created_by: 'seed',
-        updated_by: 'seed',
       },
       {
         name: 'Alpha Court 3',
         slug: slugify('Alpha Court 3', { lower: true }),
         court_type_id: courtTypeAlpha.id,
-        created_by: 'seed',
-        updated_by: 'seed',
       },
     ],
   });
@@ -100,15 +86,11 @@ async function main() {
         name: 'Beta Court 1',
         slug: slugify('Beta Court 1', { lower: true }),
         court_type_id: courtTypeBeta.id,
-        created_by: 'seed',
-        updated_by: 'seed',
       },
       {
         name: 'Beta Court 2',
         slug: slugify('Beta Court 2', { lower: true }),
         court_type_id: courtTypeBeta.id,
-        created_by: 'seed',
-        updated_by: 'seed',
       },
     ],
   });
