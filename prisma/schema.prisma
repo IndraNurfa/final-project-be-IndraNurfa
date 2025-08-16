@@ -34,8 +34,8 @@ model User {
   password   String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  created_by String   @db.VarChar(100)
-  updated_by String   @db.VarChar(100)
+  created_by String?  @db.VarChar
+  updated_by String?  @db.VarChar
 
   role     Role          @relation(fields: [role_id], references: [id])
   sessions UserSession[]
@@ -60,4 +60,32 @@ model UserSession {
 
   @@unique([token, refresh_token])
   @@map("user_sessions")
+}
+
+model MasterCourtTypes {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  price      Decimal  @db.Decimal(8, 2)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  created_by String?  @db.VarChar
+  updated_by String?  @db.VarChar
+
+  master_courts MasterCourts[] // relation
+  @@map("master_court_types")
+}
+
+model MasterCourts {
+  id            Int      @id @default(autoincrement())
+  name          String
+  slug          String
+  court_type_id Int
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now())
+  created_by    String?  @db.VarChar
+  updated_by    String?  @db.VarChar
+
+  master_court_types MasterCourtTypes @relation(fields: [court_type_id], references: [id])
+  @@map("master_courts")
 }
