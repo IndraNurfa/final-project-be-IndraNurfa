@@ -1,4 +1,5 @@
 // import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -23,8 +24,7 @@ export class RegisterDto {
   //   example: 2,
   //   description: 'Role ID, e.g., 1 for admin, 2 for user',
   // })
-  @IsNumber()
-  @IsOptional()
+  @Exclude()
   role_id: number;
 
   // @ApiProperty({ example: 'strongPassword123', minLength: 6, maxLength: 46 })
