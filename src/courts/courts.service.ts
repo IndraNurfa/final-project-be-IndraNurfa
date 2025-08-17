@@ -20,6 +20,14 @@ export class CourtsService implements ICourtsService {
     return await this.courtRepo.findAll();
   }
 
+  async findBySlug(
+    slug: string,
+  ): Promise<Prisma.MasterCourtsGetPayload<{
+    include: { master_court_types: { select: { price: true } } };
+  }> | null> {
+    return await this.courtRepo.findBySlug(slug);
+  }
+
   async findMasterType(): Promise<MasterCourtTypes[]> {
     return await this.courtRepo.findMasterType();
   }

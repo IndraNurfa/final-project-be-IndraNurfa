@@ -12,6 +12,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { RoleModule } from './role/role.module';
 import { SessionModule } from './session/session.module';
 import { UsersModule } from './users/users.module';
+import { BookingsModule } from './bookings/bookings.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     RoleModule,
     CourtsModule,
+    BookingsModule,
   ],
   controllers: [AppController],
   providers: [{ provide: 'IAppService', useClass: AppService }, PrismaService],

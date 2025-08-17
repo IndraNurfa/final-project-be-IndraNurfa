@@ -7,7 +7,7 @@ import { IUsersRepository } from './users.interface';
 
 @Injectable()
 export class UsersRepository implements IUsersRepository {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateUserDto): Promise<User> {
     return this.prisma.user.create({
@@ -16,8 +16,6 @@ export class UsersRepository implements IUsersRepository {
         full_name: data.full_name,
         password: data.password,
         role_id: data.role_id,
-        created_by: 'SYSTEM',
-        updated_by: 'SYSTEM',
       },
     });
   }
