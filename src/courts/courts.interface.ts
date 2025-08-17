@@ -9,6 +9,9 @@ export interface ICourtsService {
     Prisma.MasterCourtsGetPayload<{ include: { master_court_types: true } }>[]
   >;
   findMasterType(): Promise<MasterCourtTypes[]>;
+  findBySlug(slug: string): Promise<Prisma.MasterCourtsGetPayload<{
+    include: { master_court_types: { select: { price: true } } };
+  }> | null>;
   updateMasterCourt(
     id: number,
     dto: UpdateMasterCourtDto,
@@ -23,6 +26,9 @@ export interface ICourtsRepository {
   findAll(): Promise<
     Prisma.MasterCourtsGetPayload<{ include: { master_court_types: true } }>[]
   >;
+  findBySlug(slug: string): Promise<Prisma.MasterCourtsGetPayload<{
+    include: { master_court_types: { select: { price: true } } };
+  }> | null>;
   findMasterType(): Promise<MasterCourtTypes[]>;
   updateMasterCourt(
     id: number,

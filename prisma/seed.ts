@@ -6,11 +6,14 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Clear existing data
+  await prisma.bookingHistory.deleteMany();
+  await prisma.bookingDetail.deleteMany();
+  await prisma.booking.deleteMany();
+  await prisma.masterCourts.deleteMany();
+  await prisma.masterCourtTypes.deleteMany();
   await prisma.userSession.deleteMany();
   await prisma.user.deleteMany();
   await prisma.role.deleteMany();
-  await prisma.masterCourts.deleteMany();
-  await prisma.masterCourtTypes.deleteMany();
 
   console.log('Seeding database...');
 

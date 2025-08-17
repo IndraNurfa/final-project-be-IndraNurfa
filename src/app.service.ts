@@ -4,7 +4,7 @@ import { IAppService } from './app.interface';
 
 @Injectable()
 export class AppService implements IAppService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getHealthCheck(): Promise<string> {
     return (await this.prisma.$queryRaw`SELECT 1`)

@@ -13,9 +13,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ----------------------
+// ENUMS
+// ----------------------
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+}
+
+enum CreatedByType {
+  ADMIN
+  USER
+}
+
+// ----------------------
+// MODELS
+// ----------------------
 model Role {
   id         Int      @id @default(autoincrement())
-  name       String   @unique
+  name       String   @unique @db.VarChar
   slug       String   @db.VarChar(100)
   is_active  Boolean  @default(true)
   created_at DateTime @default(now())
@@ -37,6 +54,7 @@ model User {
 
   role     Role          @relation(fields: [role_id], references: [id])
   sessions UserSession[]
+  bookings Booking[]
 
   @@unique([email])
   @@map("users")
@@ -65,21 +83,74 @@ model MasterCourtTypes {
   name       String   @unique
   price      Decimal  @db.Decimal(8, 2)
   created_at DateTime @default(now())
-  updated_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  master_courts MasterCourts[] // relation
+  master_courts MasterCourts[]
+
   @@map("master_court_types")
 }
 
 model MasterCourts {
   id            Int      @id @default(autoincrement())
-  name          String
-  slug          String
+  name          String   @db.VarChar(100)
+  slug          String   @db.VarChar(100)
   court_type_id Int
   is_active     Boolean  @default(true)
   created_at    DateTime @default(now())
-  updated_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   master_court_types MasterCourtTypes @relation(fields: [court_type_id], references: [id])
+  bookings           Booking[]
+
   @@map("master_courts")
+}
+
+model Booking {
+  id              Int           @id @default(autoincrement())
+  uuid            String        @default(uuid()) @db.Uuid
+  created_by_type CreatedByType
+  user_id         Int
+  court_id        Int
+  status          BookingStatus @default(PENDING)
+  booking_date    DateTime      @db.Date
+  start_time      DateTime      @db.Time
+  end_time        DateTime      @db.Time
+  cancel_reason   String?       @db.VarChar
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  user      User             @relation(fields: [user_id], references: [id])
+  court     MasterCourts     @relation(fields: [court_id], references: [id])
+  details   BookingDetail[]
+  histories BookingHistory[]
+
+  @@index([uuid, booking_date, user_id])
+  @@unique([uuid])
+  @@map("bookings")
+}
+
+model BookingDetail {
+  id          Int      @id @default(autoincrement())
+  booking_id  Int
+  name        String?  @db.VarChar(100)
+  total_price Decimal  @db.Decimal(10, 2)
+  total_hour  Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  booking Booking @relation(fields: [booking_id], references: [id])
+
+  @@map("booking_details")
+}
+
+model BookingHistory {
+  id         Int           @id @default(autoincrement())
+  booking_id Int
+  status     BookingStatus
+  created_at DateTime      @default(now())
+  created_by String?       @db.VarChar
+
+  booking Booking @relation(fields: [booking_id], references: [id])
+
+  @@map("booking_histories")
 }
