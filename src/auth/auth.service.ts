@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserSession } from '@prisma/client';
@@ -15,6 +16,7 @@ import { IAuthService } from './auth.interface';
 import { LoginDto, RegisterDto } from './dto/req-auth.dto';
 import { ResponseRegisterDto } from './dto/resp-auth.dto';
 import { TokenPayload } from './types/auth';
+import { IUsersService } from 'src/users/users.interface';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -23,11 +25,12 @@ export class AuthService implements IAuthService {
   private readonly refresh_token_expires: string;
 
   constructor(
-    private readonly userService: UsersService,
-    private readonly jwtHelpers: JwtHelpers,
-    private readonly encryptHelpers: EncryptHelpers,
+    @Inject('IUsersService')
+    private readonly usersService: IUsersService,
     @Inject('ISessionService')
     private readonly sessionService: ISessionService,
+    private readonly jwtHelpers: JwtHelpers,
+    private readonly encryptHelpers: EncryptHelpers,
     private readonly configService: ConfigService,
   ) {
     this.jwtSecret =
@@ -44,7 +47,7 @@ export class AuthService implements IAuthService {
     dto.password = hash;
     dto.role_id = 1;
 
-    const data = await this.userService.create(dto);
+    const data = await this.usersService.create(dto);
 
     // TODO: Send welcome email if this failed, just continue
     // this.mailService.sendEmail(
@@ -56,10 +59,10 @@ export class AuthService implements IAuthService {
   }
 
   async login(dto: LoginDto) {
-    const existingUser = await this.userService.findByEmail(dto.email);
+    const existingUser = await this.usersService.findByEmail(dto.email);
 
     if (!existingUser) {
-      throw new BadRequestException('email not found');
+      throw new NotFoundException('email not found');
     }
 
     const plaintextPassword = dto.password;
