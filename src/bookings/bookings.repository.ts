@@ -114,6 +114,14 @@ export class BookingsRepository implements IBookingsRepository {
         booking_date,
         status: { in: ['PENDING', 'CONFIRMED'] },
       },
+      orderBy: { start_time: 'asc' },
+    });
+  }
+
+  async findByUUID(uuid: string) {
+    return await this.prisma.booking.findFirst({
+      where: { uuid },
+      include: { details: true },
     });
   }
 }

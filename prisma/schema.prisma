@@ -121,17 +121,17 @@ model Booking {
 
   user      User             @relation(fields: [user_id], references: [id])
   court     MasterCourts     @relation(fields: [court_id], references: [id])
-  details   BookingDetail[]
+  details   BookingDetail?
   histories BookingHistory[]
 
-  @@index([uuid, booking_date, user_id])
   @@unique([uuid])
+  @@index([uuid, booking_date, user_id])
   @@map("bookings")
 }
 
 model BookingDetail {
   id          Int      @id @default(autoincrement())
-  booking_id  Int
+  booking_id  Int      @unique
   name        String?  @db.VarChar(100)
   total_price Decimal  @db.Decimal(10, 2)
   total_hour  Int

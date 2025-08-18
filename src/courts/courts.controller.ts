@@ -28,18 +28,18 @@ export class CourtsController {
   ) {}
 
   @Get()
-  findAll() {
+  async findAll() {
     try {
-      return this.courtsService.findAll();
+      return await this.courtsService.findAll();
     } catch (error) {
       this.logger.error('get all courts failed', error);
     }
   }
 
   @Get('/master-court-types')
-  findMasterType() {
+  async findMasterType() {
     try {
-      return this.courtsService.findMasterType();
+      return await this.courtsService.findMasterType();
     } catch (error) {
       this.logger.error('get all court types failed', error);
     }
@@ -48,9 +48,12 @@ export class CourtsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Admin')
   @Patch('/master-court-types/:id')
-  updateCourt(@Param('id') id: number, @Body() dto: UpdateMasterCourtTypeDto) {
+  async updateCourt(
+    @Param('id') id: number,
+    @Body() dto: UpdateMasterCourtTypeDto,
+  ) {
     try {
-      return this.courtsService.updateMasterType(id, dto);
+      return await this.courtsService.updateMasterType(id, dto);
     } catch (error) {
       this.logger.error('update courts type failed', error);
     }
@@ -59,14 +62,12 @@ export class CourtsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Admin')
   @Patch('/master-courts/:id')
-  updateMasterCourt(
-    @CurrentUser() user: TokenPayload,
+  async updateMasterCourt(
     @Param('id') id: number,
     @Body() dto: UpdateMasterCourtDto,
   ) {
     try {
-      const { sub } = user;
-      return this.courtsService.updateMasterCourt(id, dto);
+      return await this.courtsService.updateMasterCourt(id, dto);
     } catch (error) {
       this.logger.error('update courts failed', error);
     }
