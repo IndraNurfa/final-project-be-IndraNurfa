@@ -113,8 +113,8 @@ model Booking {
   court_id        Int
   status          BookingStatus @default(PENDING)
   booking_date    DateTime      @db.Date
-  start_time      DateTime      @db.Time
-  end_time        DateTime      @db.Time
+  start_time      DateTime
+  end_time        DateTime
   cancel_reason   String?       @db.VarChar
   created_at      DateTime      @default(now())
   updated_at      DateTime      @updatedAt

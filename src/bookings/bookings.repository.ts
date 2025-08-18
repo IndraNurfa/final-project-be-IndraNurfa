@@ -7,6 +7,26 @@ import { IBookingsRepository } from './bookings.interface';
 export class BookingsRepository implements IBookingsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async checkOverlap(
+    prisma: Prisma.TransactionClient,
+    court_id: number,
+    booking_date: string | Date,
+    startTime: string | Date,
+    endTime: string | Date,
+  ) {
+    return await prisma.booking.findFirst({
+      where: {
+        court_id,
+        booking_date,
+        status: { in: ['PENDING', 'CONFIRMED'] },
+        AND: [
+          { start_time: { lte: endTime } },
+          { end_time: { gte: startTime } },
+        ],
+      },
+    });
+  }
+
   async create(
     b: Prisma.BookingUncheckedCreateInput,
     name: string,
@@ -19,12 +39,24 @@ export class BookingsRepository implements IBookingsRepository {
           court_id: b.court_id,
           booking_date: b.booking_date,
           status: { in: ['PENDING', 'CONFIRMED'] },
-          AND: [
-            { start_time: { lte: b.end_time } },
-            { end_time: { gte: b.end_time } },
+          NOT: [
+            {
+              OR: [
+                { end_time: { lte: b.start_time } }, // booking ends before new starts
+                { start_time: { gte: b.end_time } }, // booking starts after new ends
+              ],
+            },
           ],
         },
       });
+
+      // const overlap = await this.checkOverlap(
+      //   tx,
+      //   b.court_id,
+      //   b.booking_date,
+      //   b.start_time,
+      //   b.end_time,
+      // );
 
       if (overlap) {
         throw new Error('Court already booked');

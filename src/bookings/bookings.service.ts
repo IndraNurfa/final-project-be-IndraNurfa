@@ -32,8 +32,21 @@ export class BookingsService implements IBookingsService {
     }
 
     const book_date = new Date(dto.booking_date);
-    const book_start = new Date(`1970-01-01T${dto.start_time}`);
-    const book_end = new Date(`1970-01-01T${dto.end_time}`);
+    const book_start = new Date(`${dto.booking_date}T${dto.start_time}`);
+    const book_end = new Date(`${dto.booking_date}T${dto.end_time}`);
+
+    // const opening = new Date(`1970-01-01T07:00:00Z`);
+    // const closing = new Date(`1970-01-01T22:00:00Z`);
+
+    // if (book_start < opening) {
+    //   throw new BadRequestException(
+    //     'Booking start time is before opening hours',
+    //   );
+    // }
+
+    // if (book_end > closing) {
+    //   throw new BadRequestException('Booking end time is after closing hours');
+    // }
 
     const total_hour = this.getHourDifference(dto.end_time, dto.start_time);
 
