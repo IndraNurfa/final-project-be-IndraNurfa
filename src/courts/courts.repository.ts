@@ -31,6 +31,15 @@ export class CourtsRepository implements ICourtsRepository {
     });
   }
 
+  async findById(id: number): Promise<Prisma.MasterCourtsGetPayload<{
+    include: { master_court_types: true };
+  }> | null> {
+    return await this.prisma.masterCourts.findFirst({
+      where: { id },
+      include: { master_court_types: true },
+    });
+  }
+
   async findMasterType(): Promise<MasterCourtTypes[]> {
     return await this.prisma.masterCourtTypes.findMany({
       orderBy: { id: 'asc' },

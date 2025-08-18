@@ -8,6 +8,7 @@ import {
   Logger,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -20,6 +21,8 @@ import { IBookingsService } from './bookings.interface';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { SkipAuth } from 'src/auth/decorators/skip-auth.decorator';
 import { Prisma } from '@prisma/client';
+import { CancelBookingDto, UpdateBookingDto } from './dto/update-booking.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('bookings')
@@ -65,6 +68,17 @@ export class BookingsController {
     }
   }
 
+  @Roles('Admin')
+  @Get('/admin')
+  async adminDashboard(@Query('page') page: number) {
+    try {
+      return await this.bookingsService.adminDashboard(page);
+    } catch (error) {
+      this.logger.error(`error get booking data for admin`, error);
+      throw new InternalServerErrorException('something wrong on our side');
+    }
+  }
+
   @Get(':uuid')
   async findOne(@Param('uuid') uuid: string) {
     try {
@@ -82,10 +96,42 @@ export class BookingsController {
     }
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
-  //   return this.bookingsService.update(+id, updateBookingDto);
-  // }
+  @Roles('Admin')
+  @Patch('cancel/:uuid')
+  async cancel(@Param('uuid') uuid: string, @Body() dto: CancelBookingDto) {
+    try {
+      await this.bookingsService.cancel(uuid, dto);
+    } catch (error) {
+      this.logger.error('error update booking', error);
+      throw error;
+    }
+  }
+
+  @Roles('Admin')
+  @Patch('confirm/:uuid')
+  async confirm(@Param('uuid') uuid: string) {
+    try {
+      await this.bookingsService.confirm(uuid);
+    } catch (error) {
+      this.logger.error('error update booking', error);
+      throw error;
+    }
+  }
+
+  @Patch(':uuid')
+  async updateOne(
+    @CurrentUser() user: TokenPayload,
+    @Param('uuid') uuid: string,
+    @Body() dto: UpdateBookingDto,
+  ) {
+    try {
+      const { sub, role } = user;
+      await this.bookingsService.updateBooking(uuid, dto, sub, role);
+    } catch (error) {
+      this.logger.error('error update booking', error);
+      throw error;
+    }
+  }
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {

@@ -9,3 +9,13 @@ export interface AvailabilityResponse {
   court: string;
   available_slots: AvailableSlot[];
 }
+
+export interface UpdateBookingType {
+  uuid: string;
+  court_id: number;
+  booking_date: Date;
+  start_time: Date;
+  end_time: Date;
+  total_price: number;
+  total_hour: number;
+}
