@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { IBookingsRepository } from './bookings.interface';
@@ -33,7 +33,7 @@ export class BookingsRepository implements IBookingsRepository {
     total_price: number,
     total_hour: number,
   ) {
-    return this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       const overlap = await tx.booking.findFirst({
         where: {
           court_id: b.court_id,
@@ -59,7 +59,7 @@ export class BookingsRepository implements IBookingsRepository {
       // );
 
       if (overlap) {
-        throw new Error('Court already booked');
+        throw new ConflictException('Court already booked');
       }
 
       // 1. Create booking
@@ -119,7 +119,7 @@ export class BookingsRepository implements IBookingsRepository {
   }
 
   async findByUUID(uuid: string) {
-    return await this.prisma.booking.findFirst({
+    return await this.prisma.booking.findFirstOrThrow({
       where: { uuid },
       include: { details: true },
     });

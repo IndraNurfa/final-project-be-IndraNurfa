@@ -48,6 +48,7 @@ export class UsersController {
       return await this.usersService.findById(sub);
     } catch (error) {
       this.logger.error('get profile failed', error);
+      throw error;
     }
   }
 
@@ -70,6 +71,7 @@ export class UsersController {
       return await this.usersService.update(sub, dto);
     } catch (error) {
       this.logger.error('update profile failed', error);
+      throw error;
     }
   }
 }

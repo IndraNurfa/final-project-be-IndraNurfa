@@ -93,6 +93,7 @@ export class AuthController {
       return await this.authService.login(loginDto);
     } catch (error) {
       this.logger.error('Login failed', error);
+      throw error;
     }
   }
 
@@ -102,7 +103,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
   async getFullPayload(@CurrentUser() user: TokenPayload) {
     try {
-      return await this.authService.refreshToken(user);
+      return this.authService.refreshToken(user);
     } catch (error) {
       this.logger.error('create refresh token failed', error);
 
@@ -124,7 +125,7 @@ export class AuthController {
   async revokeToken(@CurrentUser() user: TokenPayload) {
     try {
       const { jti } = user;
-      return await this.authService.revokeToken(jti);
+      return this.authService.revokeToken(jti);
     } catch (error) {
       this.logger.error('logout failed', error);
       throw new InternalServerErrorException('something wrong on our side');

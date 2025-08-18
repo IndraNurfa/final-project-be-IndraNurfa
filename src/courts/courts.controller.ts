@@ -3,7 +3,9 @@ import {
   Controller,
   Get,
   Inject,
+  InternalServerErrorException,
   Logger,
+  NotFoundException,
   Param,
   Patch,
   UseGuards,
@@ -18,6 +20,7 @@ import {
   UpdateMasterCourtDto,
   UpdateMasterCourtTypeDto,
 } from './dto/update-court.dto';
+import { Prisma } from '@prisma/client';
 
 @Controller('courts')
 export class CourtsController {
@@ -33,6 +36,7 @@ export class CourtsController {
       return await this.courtsService.findAll();
     } catch (error) {
       this.logger.error('get all courts failed', error);
+      throw new InternalServerErrorException('something wrong on our side');
     }
   }
 
@@ -42,6 +46,7 @@ export class CourtsController {
       return await this.courtsService.findMasterType();
     } catch (error) {
       this.logger.error('get all court types failed', error);
+      throw new InternalServerErrorException('something wrong on our side');
     }
   }
 
@@ -55,7 +60,15 @@ export class CourtsController {
     try {
       return await this.courtsService.updateMasterType(id, dto);
     } catch (error) {
-      this.logger.error('update courts type failed', error);
+      this.logger.error('update courts failed', error);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(`Court type id ${id} not found.`);
+        }
+
+        this.logger.error('Unhandled Prisma error', error.code, error.meta);
+      }
+      throw new InternalServerErrorException('something wrong on our side');
     }
   }
 
@@ -70,6 +83,14 @@ export class CourtsController {
       return await this.courtsService.updateMasterCourt(id, dto);
     } catch (error) {
       this.logger.error('update courts failed', error);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(`Court id ${id} not found.`);
+        }
+
+        this.logger.error('Unhandled Prisma error', error.code, error.meta);
+      }
+      throw new InternalServerErrorException('something wrong on our side');
     }
   }
 }

@@ -4,7 +4,9 @@ import {
   Controller,
   Get,
   Inject,
+  InternalServerErrorException,
   Logger,
+  NotFoundException,
   Param,
   Post,
   Query,
@@ -17,7 +19,7 @@ import { TokenPayload } from 'src/auth/types/auth';
 import { IBookingsService } from './bookings.interface';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { SkipAuth } from 'src/auth/decorators/skip-auth.decorator';
-import { error } from 'console';
+import { Prisma } from '@prisma/client';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('bookings')
@@ -39,6 +41,7 @@ export class BookingsController {
       return await this.bookingsService.create(dto, sub, role);
     } catch (error) {
       this.logger.error('error create booking', error);
+      throw error;
     }
   }
 
@@ -58,6 +61,7 @@ export class BookingsController {
       return await this.bookingsService.findAvailable(court, date);
     } catch (error) {
       this.logger.error(`error get booking on data ${date}`, error);
+      throw error;
     }
   }
 
@@ -67,6 +71,14 @@ export class BookingsController {
       return await this.bookingsService.findByUUID(uuid);
     } catch (error) {
       this.logger.error(`error get booking uuid ${uuid}`, error);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(`booking uuid ${uuid} not found.`);
+        }
+
+        this.logger.error('Unhandled Prisma error', error.code, error.meta);
+      }
+      throw new InternalServerErrorException('something wrong on our side');
     }
   }
 
