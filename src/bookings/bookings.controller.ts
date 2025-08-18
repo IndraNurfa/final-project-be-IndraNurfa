@@ -1,9 +1,13 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Get,
   Inject,
   Logger,
+  Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
@@ -12,6 +16,8 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { TokenPayload } from 'src/auth/types/auth';
 import { IBookingsService } from './bookings.interface';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { SkipAuth } from 'src/auth/decorators/skip-auth.decorator';
+import { error } from 'console';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('bookings')
@@ -24,30 +30,45 @@ export class BookingsController {
   ) {}
 
   @Post()
-  create(@CurrentUser() user: TokenPayload, @Body() dto: CreateBookingDto) {
+  async create(
+    @CurrentUser() user: TokenPayload,
+    @Body() dto: CreateBookingDto,
+  ) {
     try {
       const { sub, role } = user;
-      return this.bookingsService.create(dto, sub, role);
+      return await this.bookingsService.create(dto, sub, role);
     } catch (error) {
       this.logger.error('error create booking', error);
     }
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.bookingsService.findAll();
-  // }
+  @SkipAuth()
+  @Get('available')
+  async findAvailable(
+    @Query('date') date: string,
+    @Query('court') court: string,
+  ) {
+    try {
+      if (court === undefined) {
+        throw new BadRequestException('court is missing');
+      }
+      if (date === undefined) {
+        date = new Date().toString();
+      }
+      return await this.bookingsService.findAvailable(court, date);
+    } catch (error) {
+      this.logger.error(`error get booking on data ${date}`, error);
+    }
+  }
 
-  // @Get('available')
-  // findAvailable(@Query('date') date: string, @Query('court') court: string) {
-  //   this.logger.verbose(`date: ${date}, court: ${court}`);
-  //   return this.bookingsService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.bookingsService.findOne(+id);
-  // }
+  @Get(':uuid')
+  async findOne(@Param('uuid') uuid: string) {
+    try {
+      return await this.bookingsService.findByUUID(uuid);
+    } catch (error) {
+      this.logger.error(`error get booking uuid ${uuid}`, error);
+    }
+  }
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {

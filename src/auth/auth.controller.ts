@@ -88,9 +88,9 @@ export class AuthController {
     type: LoginDto,
     description: 'Json structure for user login',
   })
-  login(@Body() loginDto: LoginDto) {
+  async login(@Body() loginDto: LoginDto) {
     try {
-      return this.authService.login(loginDto);
+      return await this.authService.login(loginDto);
     } catch (error) {
       this.logger.error('Login failed', error);
     }
@@ -100,9 +100,9 @@ export class AuthController {
   @UseGuards(JwtRefreshGuard)
   @Put('refresh-token')
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
-  getFullPayload(@CurrentUser() user: TokenPayload) {
+  async getFullPayload(@CurrentUser() user: TokenPayload) {
     try {
-      return this.authService.refreshToken(user);
+      return await this.authService.refreshToken(user);
     } catch (error) {
       this.logger.error('create refresh token failed', error);
 
@@ -121,10 +121,10 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiNoContentResponse({ description: 'Successful logout' })
   @ApiOperation({ summary: 'Log out the currently authenticated user' })
-  revokeToken(@CurrentUser() user: TokenPayload) {
+  async revokeToken(@CurrentUser() user: TokenPayload) {
     try {
       const { jti } = user;
-      return this.authService.revokeToken(jti);
+      return await this.authService.revokeToken(jti);
     } catch (error) {
       this.logger.error('logout failed', error);
       throw new InternalServerErrorException('something wrong on our side');
