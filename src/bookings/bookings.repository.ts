@@ -1,7 +1,8 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Booking, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { IBookingsRepository } from './bookings.interface';
+import { UpdateBookingType } from './entities/booking.entity';
 
 @Injectable()
 export class BookingsRepository implements IBookingsRepository {
@@ -19,10 +20,7 @@ export class BookingsRepository implements IBookingsRepository {
         court_id,
         booking_date,
         status: { in: ['PENDING', 'CONFIRMED'] },
-        AND: [
-          { start_time: { lte: endTime } },
-          { end_time: { gte: startTime } },
-        ],
+        AND: [{ start_time: { lt: endTime } }, { end_time: { gt: startTime } }],
       },
     });
   }
@@ -32,31 +30,15 @@ export class BookingsRepository implements IBookingsRepository {
     name: string,
     total_price: number,
     total_hour: number,
-  ) {
+  ): Promise<Booking> {
     return await this.prisma.$transaction(async (tx) => {
-      const overlap = await tx.booking.findFirst({
-        where: {
-          court_id: b.court_id,
-          booking_date: b.booking_date,
-          status: { in: ['PENDING', 'CONFIRMED'] },
-          NOT: [
-            {
-              OR: [
-                { end_time: { lte: b.start_time } }, // booking ends before new starts
-                { start_time: { gte: b.end_time } }, // booking starts after new ends
-              ],
-            },
-          ],
-        },
-      });
-
-      // const overlap = await this.checkOverlap(
-      //   tx,
-      //   b.court_id,
-      //   b.booking_date,
-      //   b.start_time,
-      //   b.end_time,
-      // );
+      const overlap = await this.checkOverlap(
+        tx,
+        b.court_id,
+        b.booking_date,
+        b.start_time,
+        b.end_time,
+      );
 
       if (overlap) {
         throw new ConflictException('Court already booked');
@@ -118,10 +100,89 @@ export class BookingsRepository implements IBookingsRepository {
     });
   }
 
-  async findByUUID(uuid: string) {
+  async findByUUID(
+    uuid: string,
+  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>> {
     return await this.prisma.booking.findFirstOrThrow({
       where: { uuid },
       include: { details: true },
+    });
+  }
+
+  async updateBooking(data: UpdateBookingType): Promise<Booking> {
+    return await this.prisma.$transaction(async (tx) => {
+      const overlap = await this.checkOverlap(
+        tx,
+        data.court_id,
+        data.booking_date,
+        data.start_time,
+        data.end_time,
+      );
+
+      if (overlap) {
+        throw new ConflictException('Court already booked');
+      }
+
+      const booking = await tx.booking.update({
+        where: { uuid: data.uuid },
+        data: {
+          booking_date: data.booking_date,
+          start_time: data.start_time,
+          end_time: data.end_time,
+        },
+      });
+
+      await tx.bookingDetail.update({
+        where: { booking_id: booking.id },
+        data: { total_price: data.total_price, total_hour: data.total_hour },
+      });
+
+      return booking;
+    });
+  }
+
+  async cancel(uuid: string, resason: string) {
+    return await this.prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.update({
+        where: { uuid },
+        data: {
+          status: 'CANCELED',
+          cancel_reason: resason,
+        },
+      });
+      await tx.bookingHistory.create({
+        data: {
+          booking_id: booking.id,
+          status: 'CANCELED',
+        },
+      });
+      return booking;
+    });
+  }
+
+  async confirm(uuid: string) {
+    return await this.prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.update({
+        where: { uuid },
+        data: {
+          status: 'CONFIRMED',
+        },
+      });
+      await tx.bookingHistory.create({
+        data: {
+          booking_id: booking.id,
+          status: 'CONFIRMED',
+        },
+      });
+      return booking;
+    });
+  }
+
+  async adminDashboard(skip: number, take: number): Promise<Booking[]> {
+    return await this.prisma.booking.findMany({
+      skip,
+      take,
+      orderBy: { id: 'desc' },
     });
   }
 }

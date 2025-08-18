@@ -1,14 +1,29 @@
-import { Prisma } from '@prisma/client';
+import { Booking, Prisma } from '@prisma/client';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { AvailabilityResponse } from './entities/booking.entity';
+import {
+  AvailabilityResponse,
+  UpdateBookingType,
+} from './entities/booking.entity';
+import { CancelBookingDto, UpdateBookingDto } from './dto/update-booking.dto';
 
 export interface IBookingsService {
   create(dto: CreateBookingDto, user_id: number, role: string);
-  findByUUID(uuid: string);
+  findByUUID(
+    uuid: string,
+  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>>;
   findAvailable(
     court_slug: string,
     date: string,
   ): Promise<AvailabilityResponse>;
+  updateBooking(
+    uuid: string,
+    dto: UpdateBookingDto,
+    user_id: number,
+    role: string,
+  ): Promise<Booking>;
+  cancel(uuid: string, dto: CancelBookingDto);
+  confirm(uuid: string);
+  adminDashboard(page: number);
 }
 
 export interface IBookingsRepository {
@@ -17,7 +32,13 @@ export interface IBookingsRepository {
     name: string,
     total_price: number,
     total_hour: number,
-  );
+  ): Promise<Booking>;
   findBookingByCourtIdAndDate(court_id: number, booking_date: Date);
-  findByUUID(uuid: string);
+  findByUUID(
+    uuid: string,
+  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>>;
+  updateBooking(data: UpdateBookingType): Promise<Booking>;
+  confirm(uuid: string);
+  cancel(uuid: string, resason: string);
+  adminDashboard(skip: number, take: number): Promise<Booking[]>;
 }

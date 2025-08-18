@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Booking, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { ICourtsService } from 'src/courts/courts.interface';
 import { IBookingsRepository, IBookingsService } from './bookings.interface';
@@ -12,7 +12,12 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import * as timezone from 'dayjs/plugin/timezone';
-import { AvailabilityResponse, AvailableSlot } from './entities/booking.entity';
+import {
+  AvailabilityResponse,
+  AvailableSlot,
+  UpdateBookingType,
+} from './entities/booking.entity';
+import { CancelBookingDto, UpdateBookingDto } from './dto/update-booking.dto';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -142,7 +147,10 @@ export class BookingsService implements IBookingsService {
     return this.bookingsRepo.create(b, dto.name, price, total_hour);
   }
 
-  async findAvailable(court_slug: string, date: string): Promise<AvailabilityResponse> {
+  async findAvailable(
+    court_slug: string,
+    date: string,
+  ): Promise<AvailabilityResponse> {
     // Validate date format
     if (!dayjs(date, 'YYYY-MM-DD', true).isValid()) {
       throw new BadRequestException('Invalid date format. Use YYYY-MM-DD');
@@ -178,15 +186,82 @@ export class BookingsService implements IBookingsService {
     };
   }
 
-  async findByUUID(uuid: string) {
+  async findByUUID(
+    uuid: string,
+  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>> {
     return await this.bookingsRepo.findByUUID(uuid);
   }
 
-  // update(id: number, updateBookingDto: UpdateBookingDto) {
-  //   return `This action updates a #${id} booking`;
-  // }
+  async updateBooking(
+    uuid: string,
+    dto: UpdateBookingDto,
+    user_id: number,
+    role: string,
+  ): Promise<Booking> {
+    const currentBooking = await this.bookingsRepo.findByUUID(uuid);
+    if (!currentBooking) {
+      throw new NotFoundException(`booking ${uuid} not found`);
+    }
+    if (currentBooking.status !== 'PENDING') {
+      throw new BadRequestException(`booking ${uuid} cant updated`);
+    }
+    if (role !== 'Admin' && currentBooking.user_id !== user_id) {
+      throw new BadRequestException(`this user cant update booking ${uuid}`);
+    }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} booking`;
-  // }
+    const court = await this.courtsService.findById(currentBooking.court_id);
+    if (!court) {
+      throw new BadRequestException(
+        `Court with slug '${currentBooking.court_id}' not found`,
+      );
+    }
+
+    const book_date = new Date(dto.booking_date);
+    const book_start = new Date(`${dto.booking_date}T${dto.start_time}`);
+    const book_end = new Date(`${dto.booking_date}T${dto.end_time}`);
+
+    const total_hour = this.getHourDifference(dto.end_time, dto.start_time);
+
+    if (total_hour === false || total_hour <= 0) {
+      throw new BadRequestException('start time or end time not valid');
+    }
+
+    const price = Number(total_hour) * Number(court.master_court_types.price);
+
+    const data: UpdateBookingType = {
+      uuid: uuid,
+      court_id: currentBooking.court_id,
+      booking_date: book_date,
+      start_time: book_start,
+      end_time: book_end,
+      total_price: price,
+      total_hour: total_hour,
+    };
+    return await this.bookingsRepo.updateBooking(data);
+  }
+
+  async cancel(uuid: string, dto: CancelBookingDto) {
+    const booking = await this.bookingsRepo.findByUUID(uuid);
+    if (booking.status !== 'PENDING') {
+      throw new BadRequestException(`status booking uuid '${uuid}' not valid `);
+    }
+    const reason = dto.reason ?? 'canceled by admin';
+    return await this.bookingsRepo.cancel(uuid, reason);
+  }
+
+  async confirm(uuid: string) {
+    const booking = await this.bookingsRepo.findByUUID(uuid);
+    if (booking.status !== 'PENDING') {
+      throw new BadRequestException(`status booking uuid '${uuid}' not valid `);
+    }
+    return await this.bookingsRepo.confirm(uuid);
+  }
+
+  async adminDashboard(page: number): Promise<Booking[]> {
+    const offset = 1;
+    const limit = 10;
+    const pages = page ?? 1;
+    const skip = (pages - 1) * limit;
+    return await this.bookingsRepo.adminDashboard(skip, limit);
+  }
 }
