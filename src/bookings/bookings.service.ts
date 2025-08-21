@@ -1,3 +1,4 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   Inject,
@@ -5,19 +6,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Booking, Prisma } from '@prisma/client';
+import { Cache } from 'cache-manager';
 import { randomUUID } from 'crypto';
+import * as dayjs from 'dayjs';
+import * as timezone from 'dayjs/plugin/timezone';
+import * as utc from 'dayjs/plugin/utc';
 import { ICourtsService } from 'src/courts/courts.interface';
 import { IBookingsRepository, IBookingsService } from './bookings.interface';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import * as dayjs from 'dayjs';
-import * as utc from 'dayjs/plugin/utc';
-import * as timezone from 'dayjs/plugin/timezone';
+import { CancelBookingDto, UpdateBookingDto } from './dto/update-booking.dto';
 import {
   AvailabilityResponse,
   AvailableSlot,
   UpdateBookingType,
 } from './entities/booking.entity';
-import { CancelBookingDto, UpdateBookingDto } from './dto/update-booking.dto';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -33,9 +35,13 @@ export class BookingsService implements IBookingsService {
     private readonly bookingsRepo: IBookingsRepository,
     @Inject('ICourtsService')
     private readonly courtsService: ICourtsService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  private getHourDifference(end_time, start_time): number | false {
+  private getHourDifference(
+    end_time: string,
+    start_time: string,
+  ): number | false {
     const [h1, m1] = end_time.split(':').map(Number);
     const [h2, m2] = start_time.split(':').map(Number);
 
@@ -144,7 +150,14 @@ export class BookingsService implements IBookingsService {
       end_time: book_end,
     };
 
-    return this.bookingsRepo.create(b, dto.name, price, total_hour);
+    const data = await this.bookingsRepo.create(b, dto.name, price, total_hour);
+
+    if (data) {
+      const cacheKey = `booking:available:${dto.court_slug}:${dto.booking_date}`;
+      await this.cacheManager.del(cacheKey);
+    }
+
+    return data;
   }
 
   async findAvailable(
@@ -154,6 +167,14 @@ export class BookingsService implements IBookingsService {
     // Validate date format
     if (!dayjs(date, 'YYYY-MM-DD', true).isValid()) {
       throw new BadRequestException('Invalid date format. Use YYYY-MM-DD');
+    }
+
+    const cacheKey = `booking:available:${court_slug}:${date}`;
+    const cachedBooking =
+      await this.cacheManager.get<AvailabilityResponse>(cacheKey);
+
+    if (cachedBooking) {
+      return cachedBooking;
     }
 
     // Find court by slug
@@ -179,11 +200,20 @@ export class BookingsService implements IBookingsService {
       existingBookings,
     );
 
-    return {
+    const data = {
       date,
       court: court_slug,
+      price: Number(court.master_court_types.price),
       available_slots: availableSlots,
     };
+
+    await this.cacheManager.set<AvailabilityResponse>(
+      cacheKey,
+      data,
+      2 * 60 * 1000,
+    );
+
+    return data;
   }
 
   async findByUUID(
@@ -251,17 +281,26 @@ export class BookingsService implements IBookingsService {
 
   async confirm(uuid: string) {
     const booking = await this.bookingsRepo.findByUUID(uuid);
-    if (booking.status !== 'PENDING') {
+    if (booking.status !== 'PENDING' || booking.cancel_reason !== null) {
       throw new BadRequestException(`status booking uuid '${uuid}' not valid `);
     }
     return await this.bookingsRepo.confirm(uuid);
   }
 
   async adminDashboard(page: number): Promise<Booking[]> {
-    const offset = 1;
     const limit = 10;
     const pages = page ?? 1;
     const skip = (pages - 1) * limit;
     return await this.bookingsRepo.adminDashboard(skip, limit);
+  }
+
+  async findByUserId(
+    user_id: number,
+    page: number,
+  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>[]> {
+    const limit = 10;
+    const pages = page ?? 1;
+    const skip = (pages - 1) * limit;
+    return await this.bookingsRepo.findByUserId(user_id, skip, limit);
   }
 }

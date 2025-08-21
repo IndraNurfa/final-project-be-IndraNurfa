@@ -28,6 +28,7 @@ import { RoleModule } from 'src/role/role.module';
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
           expiresIn: configService.get<string>('JWT_EXPIRATION', '1d'),
+          issuer: configService.get<string>('APP_NAME', 'booking-be'),
         },
       }),
     }),

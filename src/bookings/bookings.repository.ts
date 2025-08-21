@@ -89,7 +89,10 @@ export class BookingsRepository implements IBookingsRepository {
     });
   }
 
-  async findBookingByCourtIdAndDate(court_id: number, booking_date: Date) {
+  async findBookingByCourtIdAndDate(
+    court_id: number,
+    booking_date: Date,
+  ): Promise<Booking[]> {
     return await this.prisma.booking.findMany({
       where: {
         court_id,
@@ -141,7 +144,7 @@ export class BookingsRepository implements IBookingsRepository {
     });
   }
 
-  async cancel(uuid: string, resason: string) {
+  async cancel(uuid: string, resason: string): Promise<Booking> {
     return await this.prisma.$transaction(async (tx) => {
       const booking = await tx.booking.update({
         where: { uuid },
@@ -160,7 +163,7 @@ export class BookingsRepository implements IBookingsRepository {
     });
   }
 
-  async confirm(uuid: string) {
+  async confirm(uuid: string): Promise<Booking> {
     return await this.prisma.$transaction(async (tx) => {
       const booking = await tx.booking.update({
         where: { uuid },
@@ -182,6 +185,20 @@ export class BookingsRepository implements IBookingsRepository {
     return await this.prisma.booking.findMany({
       skip,
       take,
+      orderBy: { id: 'desc' },
+    });
+  }
+
+  async findByUserId(
+    user_id: number,
+    skip: number,
+    take: number,
+  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>[]> {
+    return await this.prisma.booking.findMany({
+      skip,
+      take,
+      where: { user_id, created_by_type: 'USER' },
+      include: { details: true },
       orderBy: { id: 'desc' },
     });
   }

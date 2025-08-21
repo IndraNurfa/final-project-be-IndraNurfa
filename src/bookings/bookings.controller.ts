@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
   BadRequestException,
   Body,
@@ -79,6 +80,21 @@ export class BookingsController {
     }
   }
 
+  @Roles('User')
+  @Get('/user')
+  async userDashboard(
+    @CurrentUser() user: TokenPayload,
+    @Query('page') page: number,
+  ) {
+    try {
+      const { sub } = user;
+      return await this.bookingsService.findByUserId(sub, page);
+    } catch (error) {
+      this.logger.error(`error get booking data for admin`, error);
+      throw new InternalServerErrorException('something wrong on our side');
+    }
+  }
+
   @Get(':uuid')
   async findOne(@Param('uuid') uuid: string) {
     try {
@@ -132,9 +148,4 @@ export class BookingsController {
       throw error;
     }
   }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.bookingsService.remove(+id);
-  // }
 }

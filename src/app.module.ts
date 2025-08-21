@@ -13,6 +13,7 @@ import { RoleModule } from './role/role.module';
 import { SessionModule } from './session/session.module';
 import { UsersModule } from './users/users.module';
 import { BookingsModule } from './bookings/bookings.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -21,11 +22,16 @@ import { BookingsModule } from './bookings/bookings.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 5 * 60 * 1000,
+      max: 500,
+    }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
-          ttl: 60000,
-          limit: 10,
+          ttl: 60 * 1000,
+          limit: 60,
         },
       ],
     }),

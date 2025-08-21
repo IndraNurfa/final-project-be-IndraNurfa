@@ -7,6 +7,7 @@ export interface AvailableSlot {
 export interface AvailabilityResponse {
   date: string;
   court: string;
+  price: number;
   available_slots: AvailableSlot[];
 }
 

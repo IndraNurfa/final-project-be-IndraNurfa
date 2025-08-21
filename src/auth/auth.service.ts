@@ -1,3 +1,4 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   Inject,
@@ -7,16 +8,16 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserSession } from '@prisma/client';
+import { Cache } from 'cache-manager';
 import { randomUUID } from 'crypto';
 import { EncryptHelpers } from 'src/common/utils/encrypt-helpers';
 import { JwtHelpers } from 'src/common/utils/jwt-helpers';
 import { ISessionService } from 'src/session/session.interface';
-import { UsersService } from 'src/users/users.service';
+import { IUsersService } from 'src/users/users.interface';
 import { IAuthService } from './auth.interface';
 import { LoginDto, RegisterDto } from './dto/req-auth.dto';
 import { ResponseRegisterDto } from './dto/resp-auth.dto';
 import { TokenPayload } from './types/auth';
-import { IUsersService } from 'src/users/users.interface';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -29,6 +30,7 @@ export class AuthService implements IAuthService {
     private readonly usersService: IUsersService,
     @Inject('ISessionService')
     private readonly sessionService: ISessionService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly jwtHelpers: JwtHelpers,
     private readonly encryptHelpers: EncryptHelpers,
     private readonly configService: ConfigService,
@@ -45,20 +47,14 @@ export class AuthService implements IAuthService {
     const hash = await this.encryptHelpers.hashPassword(dto.password);
 
     dto.password = hash;
-    dto.role_id = 1;
+    dto.role_id = 0;
 
     const data = await this.usersService.create(dto);
 
-    // TODO: Send welcome email if this failed, just continue
-    // this.mailService.sendEmail(
-    //   'Welcome to Our Service',
-    //   dto.email,
-    //   dto.full_name,
-    // );
     return data;
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto): Promise<any> {
     const existingUser = await this.usersService.findByEmail(dto.email);
 
     if (!existingUser) {
@@ -101,6 +97,12 @@ export class AuthService implements IAuthService {
     const hash_token = this.encryptHelpers.hashToken(access_token);
     const hash_refresh_token = this.encryptHelpers.hashToken(refresh_token);
 
+    await this.cacheManager.set<string>(
+      `auth:token:${uuid}`,
+      hash_token,
+      15 * 60 * 1000,
+    );
+
     await this.sessionService.create({
       user_id: existingUser.id,
       jti: uuid,
@@ -120,6 +122,8 @@ export class AuthService implements IAuthService {
   async refreshToken(data: TokenPayload): Promise<string> {
     const { sub, full_name, role, jti } = data;
 
+    await this.cacheManager.del(`auth:token:${jti}`);
+
     const access_token = await this.jwtHelpers.generate(
       sub,
       full_name,
@@ -137,10 +141,17 @@ export class AuthService implements IAuthService {
       throw new InternalServerErrorException('Failed to update access token');
     }
 
+    await this.cacheManager.set<string>(
+      `auth:token:${jti}`,
+      hashToken,
+      15 * 60 * 1000,
+    );
+
     return access_token;
   }
 
   async revokeToken(jti: string): Promise<UserSession> {
+    await this.cacheManager.del(`auth:token:${jti}`);
     return await this.sessionService.revokeToken(jti);
   }
 }

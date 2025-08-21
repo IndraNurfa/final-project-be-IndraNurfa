@@ -1,3 +1,4 @@
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
   Body,
   Controller,
@@ -9,18 +10,17 @@ import {
   Param,
   Patch,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { Prisma } from '@prisma/client';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { TokenPayload } from 'src/auth/types/auth';
 import { ICourtsService } from './courts.interface';
 import {
   UpdateMasterCourtDto,
   UpdateMasterCourtTypeDto,
 } from './dto/update-court.dto';
-import { Prisma } from '@prisma/client';
 
 @Controller('courts')
 export class CourtsController {
@@ -30,6 +30,9 @@ export class CourtsController {
     @Inject('ICourtsService') private readonly courtsService: ICourtsService,
   ) {}
 
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('courts')
+  @CacheTTL(24 * 60 * 60 * 1000)
   @Get()
   async findAll() {
     try {
@@ -40,6 +43,9 @@ export class CourtsController {
     }
   }
 
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('courts:type')
+  @CacheTTL(24 * 60 * 60 * 1000)
   @Get('/master-court-types')
   async findMasterType() {
     try {

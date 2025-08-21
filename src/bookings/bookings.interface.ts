@@ -24,6 +24,10 @@ export interface IBookingsService {
   cancel(uuid: string, dto: CancelBookingDto);
   confirm(uuid: string);
   adminDashboard(page: number);
+  findByUserId(
+    user_id: number,
+    page: number,
+  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>[]>;
 }
 
 export interface IBookingsRepository {
@@ -33,12 +37,20 @@ export interface IBookingsRepository {
     total_price: number,
     total_hour: number,
   ): Promise<Booking>;
-  findBookingByCourtIdAndDate(court_id: number, booking_date: Date);
+  findBookingByCourtIdAndDate(
+    court_id: number,
+    booking_date: Date,
+  ): Promise<Booking[]>;
   findByUUID(
     uuid: string,
   ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>>;
   updateBooking(data: UpdateBookingType): Promise<Booking>;
-  confirm(uuid: string);
-  cancel(uuid: string, resason: string);
+  confirm(uuid: string): Promise<Booking>;
+  cancel(uuid: string, resason: string): Promise<Booking>;
   adminDashboard(skip: number, take: number): Promise<Booking[]>;
+  findByUserId(
+    user_id: number,
+    skip: number,
+    take: number,
+  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>[]>;
 }
