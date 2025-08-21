@@ -36,6 +36,7 @@ export interface ICourtsRepository {
     include: { master_court_types: true };
   }> | null>;
   findMasterType(): Promise<MasterCourtTypes[]>;
+  findMasterTypeById(id: number): Promise<MasterCourtTypes | null>;
   updateMasterCourt(
     id: number,
     dto: UpdateMasterCourtDto,

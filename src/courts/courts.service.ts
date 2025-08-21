@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { MasterCourts, MasterCourtTypes, Prisma } from '@prisma/client';
 import { Cache } from 'cache-manager';
 import slugify from 'slugify';
@@ -77,6 +77,15 @@ export class CourtsService implements ICourtsService {
 
     const cacheKey = `court:id:${id}`;
     await this.cacheManager.del(cacheKey);
+
+    if (dto.court_type_id) {
+      const courtType = await this.courtRepo.findMasterTypeById(
+        dto.court_type_id,
+      );
+      if (!courtType) {
+        throw new NotFoundException('Court type not found');
+      }
+    }
 
     return await this.courtRepo.updateMasterCourt(id, dto);
   }

@@ -31,7 +31,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       throttlers: [
         {
           ttl: 60 * 1000,
-          limit: 80,
+          limit: 20,
         },
       ],
     }),
