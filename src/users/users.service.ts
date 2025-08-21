@@ -41,33 +41,31 @@ export class UsersService implements IUsersService {
     return user;
   }
 
-  async update(id: number, data: UpdateUserDto): Promise<User> {
+  async update(id: number, dto: UpdateUserDto): Promise<User> {
     const cacheKey = `user:profile:${id}`;
+    await this.cacheManager.del(cacheKey);
 
-    try {
-      await this.cacheManager.del(cacheKey);
-
-      const updatedUser = await this.userRepo.update(id, data);
-
-      await this.cacheManager.set(cacheKey, updatedUser, 3600);
-
-      return updatedUser;
-    } catch (error) {
-      await this.cacheManager.del(cacheKey);
-      throw error;
-    }
+    return await this.userRepo.update(id, dto);
   }
 
-  async findById(id: number): Promise<
-    Prisma.UserGetPayload<{
-      include: { role: { select: { name: true } } };
-    }>
-  > {
+  async findById(id: number): Promise<Prisma.UserGetPayload<{
+    select: {
+      id: true;
+      email: true;
+      full_name: true;
+      role: { select: { name: true } };
+    };
+  }> | null> {
     const cacheKey = `user:profile:${id}`;
 
     const cachedUser = await this.cacheManager.get<
       Prisma.UserGetPayload<{
-        include: { role: { select: { name: true } } };
+        select: {
+          id: true;
+          email: true;
+          full_name: true;
+          role: { select: { name: true } };
+        };
       }>
     >(cacheKey);
 
@@ -75,15 +73,9 @@ export class UsersService implements IUsersService {
       return cachedUser;
     }
 
-    // If not in cache, get from repository
     const user = await this.userRepo.findById(id);
 
-    if (!user) {
-      throw new BadRequestException(`User with ID ${id} not found`);
-    }
-
-    // Store user in cache before returning
-    await this.cacheManager.set(cacheKey, user, 60 * 60 * 1000); // Cache for 1 hour
+    await this.cacheManager.set(cacheKey, user, 60 * 60 * 1000);
 
     return user;
   }

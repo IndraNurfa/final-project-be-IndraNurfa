@@ -41,13 +41,19 @@ export class UsersRepository implements IUsersRepository {
   }
 
   async findById(id: number): Promise<Prisma.UserGetPayload<{
-    include: { role: { select: { name: true } } };
+    select: {
+      id: true;
+      email: true;
+      full_name: true;
+      role: { select: { name: true } };
+    };
   }> | null> {
     return await this.prisma.user.findFirst({
-      where: {
-        id,
-      },
-      include: {
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
         role: {
           select: { name: true },
         },

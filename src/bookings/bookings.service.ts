@@ -219,7 +219,19 @@ export class BookingsService implements IBookingsService {
   async findByUUID(
     uuid: string,
   ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>> {
-    return await this.bookingsRepo.findByUUID(uuid);
+    const cacheKey = `booking:uuid:${uuid}`;
+    const cachedBooking =
+      await this.cacheManager.get<
+        Prisma.BookingGetPayload<{ include: { details: true } }>
+      >(cacheKey);
+
+    if (cachedBooking) {
+      return cachedBooking;
+    }
+
+    const data = await this.bookingsRepo.findByUUID(uuid);
+    await this.cacheManager.set(cacheKey, data, 5 * 60 * 1000);
+    return data;
   }
 
   async updateBooking(
@@ -267,6 +279,10 @@ export class BookingsService implements IBookingsService {
       total_price: price,
       total_hour: total_hour,
     };
+
+    const cacheKey = `booking:uuid:${uuid}`;
+    await this.cacheManager.del(cacheKey);
+
     return await this.bookingsRepo.updateBooking(data);
   }
 
@@ -276,6 +292,10 @@ export class BookingsService implements IBookingsService {
       throw new BadRequestException(`status booking uuid '${uuid}' not valid `);
     }
     const reason = dto.reason ?? 'canceled by admin';
+
+    const cacheKey = `booking:uuid:${uuid}`;
+    await this.cacheManager.del(cacheKey);
+
     return await this.bookingsRepo.cancel(uuid, reason);
   }
 
@@ -284,6 +304,10 @@ export class BookingsService implements IBookingsService {
     if (booking.status !== 'PENDING' || booking.cancel_reason !== null) {
       throw new BadRequestException(`status booking uuid '${uuid}' not valid `);
     }
+
+    const cacheKey = `booking:uuid:${uuid}`;
+    await this.cacheManager.del(cacheKey);
+
     return await this.bookingsRepo.confirm(uuid);
   }
 

@@ -38,9 +38,9 @@ export class ResponseRegisterDto {
 
 export class ResponseLoginDto {
   // @ApiProperty({ example: 1 })
-  // @Expose()
-  // @Type(() => Number)
-  // id: number;
+  @Expose()
+  @Type(() => Number)
+  id: number;
 
   // @ApiProperty({ example: 'John Doe' })
   @Expose()

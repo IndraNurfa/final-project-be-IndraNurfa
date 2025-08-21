@@ -15,9 +15,9 @@ export class RoleService implements IRoleService {
   async findUserRole(): Promise<Role | null> {
     const cacheKey = `role:user`;
 
-    const cachedCourt = await this.cacheManager.get<Role>(cacheKey);
-    if (cachedCourt) {
-      return cachedCourt;
+    const cachedRole = await this.cacheManager.get<Role>(cacheKey);
+    if (cachedRole) {
+      return cachedRole;
     }
 
     const data = await this.roleRepo.findRoleUser();
