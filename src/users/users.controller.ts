@@ -17,7 +17,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Prisma, User } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { TokenPayload } from 'src/auth/types/auth';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
@@ -44,7 +44,7 @@ export class UsersController {
     type: ResponseGetUsersDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  async findOne(@CurrentUser() user: TokenPayload): Promise<User | undefined> {
+  async findOne(@CurrentUser() user: TokenPayload): Promise<any> {
     try {
       const { sub } = user;
       return await this.usersService.findById(sub);
@@ -55,6 +55,7 @@ export class UsersController {
   }
 
   @Patch('profile')
+  @UseInterceptors(new SerializationInterceptor(ResponseGetUsersDto))
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiBody({
     type: UpdateUserPartialDto,

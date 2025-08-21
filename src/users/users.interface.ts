@@ -10,11 +10,14 @@ export interface IUsersService {
     }>
   >;
   update(id: number, data: UpdateUserDto): Promise<User>;
-  findById(id: number): Promise<
-    Prisma.UserGetPayload<{
-      include: { role: { select: { name: true } } };
-    }>
-  >;
+  findById(id: number): Promise<Prisma.UserGetPayload<{
+    select: {
+      id: true;
+      email: true;
+      full_name: true;
+      role: { select: { name: true } };
+    };
+  }> | null>;
 }
 
 export interface IUsersRepository {
@@ -24,6 +27,11 @@ export interface IUsersRepository {
   }> | null>;
   update(id: number, data: UpdateUserDto): Promise<User>;
   findById(id: number): Promise<Prisma.UserGetPayload<{
-    include: { role: { select: { name: true } } };
+    select: {
+      id: true;
+      email: true;
+      full_name: true;
+      role: { select: { name: true } };
+    };
   }> | null>;
 }
