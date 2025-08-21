@@ -3,7 +3,6 @@ import { Exclude } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   Length,
@@ -25,6 +24,7 @@ export class RegisterDto {
   //   description: 'Role ID, e.g., 1 for admin, 2 for user',
   // })
   @Exclude()
+  @IsOptional()
   role_id: number;
 
   // @ApiProperty({ example: 'strongPassword123', minLength: 6, maxLength: 46 })

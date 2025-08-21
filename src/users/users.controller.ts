@@ -1,8 +1,10 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Get,
   Inject,
+  InternalServerErrorException,
   Logger,
   Patch,
   UseGuards,
@@ -15,7 +17,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { TokenPayload } from 'src/auth/types/auth';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
@@ -71,7 +73,19 @@ export class UsersController {
       return await this.usersService.update(sub, dto);
     } catch (error) {
       this.logger.error('update profile failed', error);
-      throw error;
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          const field = (error.meta?.target as string[])[0];
+
+          throw new ConflictException(
+            `A user already exists with this ${field}.`,
+          );
+        }
+
+        this.logger.error('Unhandled Prisma error', error.code, error.meta);
+      }
+      throw new InternalServerErrorException('something wrong on our side');
     }
   }
 }

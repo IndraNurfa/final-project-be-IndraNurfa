@@ -32,10 +32,12 @@ export class JwtRefreshStrategy extends PassportStrategy(
       typeof authHeader === 'string' ? authHeader.split(' ')[1] : undefined;
 
     if (!token) {
+      console.log('Token not found');
       throw new UnauthorizedException('Token not found');
     }
 
     if (payload.type !== 'refresh_token') {
+      console.log('Invalid token type');
       throw new UnauthorizedException('Invalid token type');
     }
 

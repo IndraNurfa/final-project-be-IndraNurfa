@@ -1,5 +1,7 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { MasterCourts, MasterCourtTypes, Prisma } from '@prisma/client';
+import { Cache } from 'cache-manager';
 import slugify from 'slugify';
 import { ICourtsRepository, ICourtsService } from './courts.interface';
 import {
@@ -12,6 +14,7 @@ export class CourtsService implements ICourtsService {
   constructor(
     @Inject('ICourtsRepository')
     private readonly courtRepo: ICourtsRepository,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async findAll(): Promise<
@@ -23,13 +26,41 @@ export class CourtsService implements ICourtsService {
   async findBySlug(slug: string): Promise<Prisma.MasterCourtsGetPayload<{
     include: { master_court_types: true };
   }> | null> {
-    return await this.courtRepo.findBySlug(slug);
+    const cacheKey = `court:slug:${slug}`;
+
+    const cachedCourt = await this.cacheManager.get<
+      Prisma.MasterCourtsGetPayload<{
+        include: { master_court_types: true };
+      }>
+    >(cacheKey);
+
+    if (cachedCourt) {
+      return cachedCourt;
+    }
+
+    const data = await this.courtRepo.findBySlug(slug);
+    await this.cacheManager.set(cacheKey, data, 24 * 60 * 60 * 1000);
+    return data;
   }
 
   async findById(id: number): Promise<Prisma.MasterCourtsGetPayload<{
     include: { master_court_types: true };
   }> | null> {
-    return await this.courtRepo.findById(id);
+    const cacheKey = `court:id:${id}`;
+
+    const cachedCourt = await this.cacheManager.get<
+      Prisma.MasterCourtsGetPayload<{
+        include: { master_court_types: true };
+      }>
+    >(cacheKey);
+
+    if (cachedCourt) {
+      return cachedCourt;
+    }
+
+    const data = await this.courtRepo.findById(id);
+    await this.cacheManager.set(cacheKey, data, 24 * 60 * 60 * 1000);
+    return data;
   }
 
   async findMasterType(): Promise<MasterCourtTypes[]> {
@@ -43,6 +74,10 @@ export class CourtsService implements ICourtsService {
     if (dto.name) {
       dto.slug = slugify(dto.name, { lower: true });
     }
+
+    const cacheKey = `court:id:${id}`;
+    await this.cacheManager.del(cacheKey);
+
     return await this.courtRepo.updateMasterCourt(id, dto);
   }
 
@@ -50,6 +85,9 @@ export class CourtsService implements ICourtsService {
     id: number,
     dto: UpdateMasterCourtTypeDto,
   ): Promise<MasterCourtTypes> {
+    const cacheKey = `courts:type`;
+    await this.cacheManager.del(cacheKey);
+
     return await this.courtRepo.updateMasterType(id, dto);
   }
 }

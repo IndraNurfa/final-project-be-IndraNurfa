@@ -3,9 +3,9 @@ import { Expose, Transform, Type } from 'class-transformer';
 
 export class ResponseRegisterDto {
   // @ApiProperty({ example: 1 })
-  @Expose()
-  @Type(() => Number)
-  id: number;
+  // @Expose()
+  // @Type(() => Number)
+  // id: number;
 
   // @ApiProperty({ example: 'johndoe@example.com' })
   @Expose()
@@ -38,9 +38,9 @@ export class ResponseRegisterDto {
 
 export class ResponseLoginDto {
   // @ApiProperty({ example: 1 })
-  @Expose()
-  @Type(() => Number)
-  id: number;
+  // @Expose()
+  // @Type(() => Number)
+  // id: number;
 
   // @ApiProperty({ example: 'John Doe' })
   @Expose()
@@ -51,6 +51,10 @@ export class ResponseLoginDto {
   @Expose()
   @Type(() => String)
   email: string;
+
+  @Expose()
+  @Transform(({ obj }: { obj: { role?: { name?: string } } }) => obj.role?.name)
+  role: string;
 
   // @ApiProperty({
   //   example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
