@@ -15,6 +15,7 @@ import {
   ApiBody,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
@@ -26,6 +27,7 @@ import { ResponseGetUsersDto } from './dto/resp-user.dto';
 import { UpdateUserDto, UpdateUserPartialDto } from './dto/update-user.dto';
 import { IUsersService } from './users.interface';
 
+@ApiTags('users')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('users')

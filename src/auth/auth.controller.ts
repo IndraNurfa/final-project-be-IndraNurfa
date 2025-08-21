@@ -20,6 +20,8 @@ import {
   ApiBody,
   ApiBearerAuth,
   ApiNoContentResponse,
+  ApiTags,
+  ApiHeader,
 } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
@@ -35,6 +37,7 @@ import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { TokenPayload } from './types/auth';
 import { IAuthService } from './auth.interface';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   private logger = new Logger(AuthController.name);
@@ -100,7 +103,13 @@ export class AuthController {
   @UseInterceptors(new SerializationInterceptor(ResponseRefreshTokenDto))
   @UseGuards(JwtRefreshGuard)
   @Put('refresh-token')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Bearer <refresh_token>',
+    required: true,
+  })
   async getFullPayload(@CurrentUser() user: TokenPayload) {
     try {
       return this.authService.refreshToken(user);

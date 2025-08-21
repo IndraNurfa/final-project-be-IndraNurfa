@@ -46,6 +46,12 @@ export class CourtsRepository implements ICourtsRepository {
     });
   }
 
+  async findMasterTypeById(id: number): Promise<MasterCourtTypes | null> {
+    return await this.prisma.masterCourtTypes.findFirst({
+      where: { id },
+    });
+  }
+
   async updateMasterCourt(
     id: number,
     dto: UpdateMasterCourtDto,

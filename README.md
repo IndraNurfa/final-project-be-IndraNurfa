@@ -1,98 +1,174 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# PadelPal API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+PadelPal is a smart and seamless booking platform designed to make playing padel effortless. With just a few taps, players can find, book, and manage padel courts anytime, anywhere. Whether you’re a casual player or a competitive athlete, PadelPal connects you with top venues, ensures transparent pricing, and keeps scheduling simple—so you can focus on what matters: enjoying the game.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Prerequisites
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js v18.x or later
+- pnpm (recommended) or npm/yarn
+- PostgreSQL (running and accessible)
 
-## Project setup
+---
 
-```bash
-$ pnpm install
-```
+## How to Run
 
-## Compile and run the project
+1. Clone this repository
 
-```bash
-# development
-$ pnpm run start
+   ```bash
+   git clone <repository-url>
+   cd final-project-be-IndraNurfa
+   ```
 
-# watch mode
-$ pnpm run start:dev
+2. Install dependencies:
 
-# production mode
-$ pnpm run start:prod
-```
+   ```bash
+   pnpm install
+   # or
+   npm install
+   ```
 
-## Run tests
+3. Copy `.env.example` to `.env` and adjust your database and JWT configuration
 
-```bash
-# unit tests
-$ pnpm run test
+4. Run migrations and seed the database:
 
-# e2e tests
-$ pnpm run test:e2e
+   ```bash
+   npx prisma migrate dev --name init
+   pnpm run seed
+   ```
 
-# test coverage
-$ pnpm run test:cov
-```
+5. Start the application:
 
-## Deployment
+   ```bash
+   pnpm run start:dev
+   ```
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+6. Open Swagger API docs at [http://localhost:3000/api](http://localhost:3000/api)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
+## Tech Stack
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+- Framework: NestJS (Node.js)
+- Database: PostgreSQL with Prisma ORM
+- Authentication: JWT with Passport
+- Validation: class-validator & class-transformer
+- Documentation: Swagger/OpenAPI
+- Language: TypeScript
+- Rate Limiting: @nestjs/throttler
+- Logging: NestJS Logger
+- Cache: @nestjs/cache-manager
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## Database Schema
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Below are the main tables and fields as implemented in the database:
 
-## Support
+### Role
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+| Field      | Type         | Constraints/Notes           |
+| ---------- | ------------ | --------------------------- |
+| id         | INTEGER      | PRIMARY KEY, AUTO_INCREMENT |
+| name       | VARCHAR      | UNIQUE                      |
+| slug       | VARCHAR(100) |                             |
+| is_active  | BOOLEAN      | DEFAULT TRUE                |
+| created_at | TIMESTAMP    | DEFAULT NOW()               |
+| updated_at | TIMESTAMP    | ON UPDATE CURRENT_TIMESTAMP |
 
-## Stay in touch
+### User
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+| Field      | Type         | Constraints/Notes           |
+| ---------- | ------------ | --------------------------- |
+| id         | INTEGER      | PRIMARY KEY, AUTO_INCREMENT |
+| email      | VARCHAR(100) | UNIQUE                      |
+| full_name  | VARCHAR(100) |                             |
+| role_id    | INTEGER      | FOREIGN KEY (Role)          |
+| password   | VARCHAR      |                             |
+| created_at | TIMESTAMP    | DEFAULT NOW()               |
+| updated_at | TIMESTAMP    | ON UPDATE CURRENT_TIMESTAMP |
+
+### UserSession
+
+| Field                 | Type      | Constraints/Notes           |
+| --------------------- | --------- | --------------------------- |
+| id                    | INTEGER   | PRIMARY KEY, AUTO_INCREMENT |
+| user_id               | INTEGER   | FOREIGN KEY (User)          |
+| jti                   | UUID      | UNIQUE                      |
+| token                 | TEXT      |                             |
+| refresh_token         | TEXT      |                             |
+| token_expired         | TIMESTAMP |                             |
+| refresh_token_expired | TIMESTAMP |                             |
+| created_at            | TIMESTAMP | DEFAULT NOW()               |
+| updated_at            | TIMESTAMP | ON UPDATE CURRENT_TIMESTAMP |
+| revoked_at            | TIMESTAMP | NULLABLE                    |
+
+### MasterCourtTypes
+
+| Field      | Type         | Constraints/Notes           |
+| ---------- | ------------ | --------------------------- |
+| id         | INTEGER      | PRIMARY KEY, AUTO_INCREMENT |
+| name       | VARCHAR      | UNIQUE                      |
+| price      | DECIMAL(8,2) |                             |
+| created_at | TIMESTAMP    | DEFAULT NOW()               |
+| updated_at | TIMESTAMP    | ON UPDATE CURRENT_TIMESTAMP |
+
+### MasterCourts
+
+| Field         | Type         | Constraints/Notes              |
+| ------------- | ------------ | ------------------------------ |
+| id            | INTEGER      | PRIMARY KEY, AUTO_INCREMENT    |
+| name          | VARCHAR(100) |                                |
+| slug          | VARCHAR(100) |                                |
+| court_type_id | INTEGER      | FOREIGN KEY (MasterCourtTypes) |
+| is_active     | BOOLEAN      | DEFAULT TRUE                   |
+| created_at    | TIMESTAMP    | DEFAULT NOW()                  |
+| updated_at    | TIMESTAMP    | ON UPDATE CURRENT_TIMESTAMP    |
+
+### Booking
+
+| Field           | Type      | Constraints/Notes                                    |
+| --------------- | --------- | ---------------------------------------------------- |
+| id              | INTEGER   | PRIMARY KEY, AUTO_INCREMENT                          |
+| uuid            | UUID      | UNIQUE, DEFAULT uuid()                               |
+| created_by_type | VARCHAR   | ENUM (ADMIN, USER)                                   |
+| user_id         | INTEGER   | FOREIGN KEY (User)                                   |
+| court_id        | INTEGER   | FOREIGN KEY (MasterCourts)                           |
+| status          | VARCHAR   | ENUM (PENDING, CONFIRMED, CANCELED), DEFAULT PENDING |
+| booking_date    | DATE      |                                                      |
+| start_time      | TIMESTAMP |                                                      |
+| end_time        | TIMESTAMP |                                                      |
+| cancel_reason   | VARCHAR   | NULLABLE                                             |
+| created_at      | TIMESTAMP | DEFAULT NOW()                                        |
+| updated_at      | TIMESTAMP | ON UPDATE CURRENT_TIMESTAMP                          |
+
+### BookingDetail
+
+| Field       | Type          | Constraints/Notes             |
+| ----------- | ------------- | ----------------------------- |
+| id          | INTEGER       | PRIMARY KEY, AUTO_INCREMENT   |
+| booking_id  | INTEGER       | UNIQUE, FOREIGN KEY (Booking) |
+| name        | VARCHAR(100)  | NULLABLE                      |
+| total_price | DECIMAL(10,2) |                               |
+| total_hour  | INTEGER       |                               |
+| created_at  | TIMESTAMP     | DEFAULT NOW()                 |
+| updated_at  | TIMESTAMP     | ON UPDATE CURRENT_TIMESTAMP   |
+
+### BookingHistory
+
+| Field      | Type      | Constraints/Notes                   |
+| ---------- | --------- | ----------------------------------- |
+| id         | INTEGER   | PRIMARY KEY, AUTO_INCREMENT         |
+| booking_id | INTEGER   | FOREIGN KEY (Booking)               |
+| status     | VARCHAR   | ENUM (PENDING, CONFIRMED, CANCELED) |
+| created_at | TIMESTAMP | DEFAULT NOW()                       |
+| created_by | VARCHAR   | NULLABLE                            |
+
+---
 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+<p align="right">GOD BLESS~ <br/>Indra Nurfa</p>
