@@ -103,12 +103,20 @@ export class BookingsRepository implements IBookingsRepository {
     });
   }
 
-  async findByUUID(
-    uuid: string,
-  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>> {
+  async findByUUID(uuid: string): Promise<
+    Prisma.BookingGetPayload<{
+      include: {
+        details: true;
+        court: { select: { name: true } };
+      };
+    }>
+  > {
     return await this.prisma.booking.findFirstOrThrow({
+      include: {
+        details: true,
+        court: { select: { name: true } },
+      },
       where: { uuid },
-      include: { details: true },
     });
   }
 
@@ -181,8 +189,32 @@ export class BookingsRepository implements IBookingsRepository {
     });
   }
 
-  async adminDashboard(skip: number, take: number): Promise<Booking[]> {
+  async adminDashboard(
+    skip: number,
+    take: number,
+  ): Promise<
+    Prisma.BookingGetPayload<{
+      select: {
+        id: true;
+        uuid: true;
+        booking_date: true;
+        start_time: true;
+        end_time: true;
+        status: true;
+        court: { select: { name: true } };
+      };
+    }>[]
+  > {
     return await this.prisma.booking.findMany({
+      select: {
+        id: true,
+        uuid: true,
+        booking_date: true,
+        start_time: true,
+        end_time: true,
+        status: true,
+        court: { select: { name: true } },
+      },
       skip,
       take,
       orderBy: { id: 'desc' },
@@ -193,12 +225,32 @@ export class BookingsRepository implements IBookingsRepository {
     user_id: number,
     skip: number,
     take: number,
-  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>[]> {
+  ): Promise<
+    Prisma.BookingGetPayload<{
+      select: {
+        id: true;
+        uuid: true;
+        booking_date: true;
+        start_time: true;
+        end_time: true;
+        status: true;
+        court: { select: { name: true } };
+      };
+    }>[]
+  > {
     return await this.prisma.booking.findMany({
+      select: {
+        id: true,
+        uuid: true,
+        booking_date: true,
+        start_time: true,
+        end_time: true,
+        status: true,
+        court: { select: { name: true } },
+      },
       skip,
       take,
       where: { user_id, created_by_type: 'USER' },
-      include: { details: true },
       orderBy: { id: 'desc' },
     });
   }

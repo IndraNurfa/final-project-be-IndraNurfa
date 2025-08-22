@@ -216,14 +216,23 @@ export class BookingsService implements IBookingsService {
     return data;
   }
 
-  async findByUUID(
-    uuid: string,
-  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>> {
+  async findByUUID(uuid: string): Promise<
+    Prisma.BookingGetPayload<{
+      include: {
+        details: true;
+        court: { select: { name: true } };
+      };
+    }>
+  > {
     const cacheKey = `booking:uuid:${uuid}`;
-    const cachedBooking =
-      await this.cacheManager.get<
-        Prisma.BookingGetPayload<{ include: { details: true } }>
-      >(cacheKey);
+    const cachedBooking = await this.cacheManager.get<
+      Prisma.BookingGetPayload<{
+        include: {
+          details: true;
+          court: { select: { name: true } };
+        };
+      }>
+    >(cacheKey);
 
     if (cachedBooking) {
       return cachedBooking;
@@ -311,7 +320,19 @@ export class BookingsService implements IBookingsService {
     return await this.bookingsRepo.confirm(uuid);
   }
 
-  async adminDashboard(page: number): Promise<Booking[]> {
+  async adminDashboard(page: number): Promise<
+    Prisma.BookingGetPayload<{
+      select: {
+        id: true;
+        uuid: true;
+        booking_date: true;
+        start_time: true;
+        end_time: true;
+        status: true;
+        court: { select: { name: true } };
+      };
+    }>[]
+  > {
     const limit = 10;
     const pages = page ?? 1;
     const skip = (pages - 1) * limit;
@@ -321,7 +342,19 @@ export class BookingsService implements IBookingsService {
   async findByUserId(
     user_id: number,
     page: number,
-  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>[]> {
+  ): Promise<
+    Prisma.BookingGetPayload<{
+      select: {
+        id: true;
+        uuid: true;
+        booking_date: true;
+        start_time: true;
+        end_time: true;
+        status: true;
+        court: { select: { name: true } };
+      };
+    }>[]
+  > {
     const limit = 10;
     const pages = page ?? 1;
     const skip = (pages - 1) * limit;

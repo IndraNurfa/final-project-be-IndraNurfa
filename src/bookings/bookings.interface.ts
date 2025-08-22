@@ -8,9 +8,14 @@ import { CancelBookingDto, UpdateBookingDto } from './dto/update-booking.dto';
 
 export interface IBookingsService {
   create(dto: CreateBookingDto, user_id: number, role: string);
-  findByUUID(
-    uuid: string,
-  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>>;
+  findByUUID(uuid: string): Promise<
+    Prisma.BookingGetPayload<{
+      include: {
+        details: true;
+        court: { select: { name: true } };
+      };
+    }>
+  >;
   findAvailable(
     court_slug: string,
     date: string,
@@ -23,11 +28,35 @@ export interface IBookingsService {
   ): Promise<Booking>;
   cancel(uuid: string, dto: CancelBookingDto);
   confirm(uuid: string);
-  adminDashboard(page: number);
+  adminDashboard(page: number): Promise<
+    Prisma.BookingGetPayload<{
+      select: {
+        id: true;
+        uuid: true;
+        booking_date: true;
+        start_time: true;
+        end_time: true;
+        status: true;
+        court: { select: { name: true } };
+      };
+    }>[]
+  >;
   findByUserId(
     user_id: number,
     page: number,
-  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>[]>;
+  ): Promise<
+    Prisma.BookingGetPayload<{
+      select: {
+        id: true;
+        uuid: true;
+        booking_date: true;
+        start_time: true;
+        end_time: true;
+        status: true;
+        court: { select: { name: true } };
+      };
+    }>[]
+  >;
 }
 
 export interface IBookingsRepository {
@@ -41,16 +70,48 @@ export interface IBookingsRepository {
     court_id: number,
     booking_date: Date,
   ): Promise<Booking[]>;
-  findByUUID(
-    uuid: string,
-  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>>;
+  findByUUID(uuid: string): Promise<
+    Prisma.BookingGetPayload<{
+      include: {
+        details: true;
+        court: { select: { name: true } };
+      };
+    }>
+  >;
   updateBooking(data: UpdateBookingType): Promise<Booking>;
   confirm(uuid: string): Promise<Booking>;
   cancel(uuid: string, resason: string): Promise<Booking>;
-  adminDashboard(skip: number, take: number): Promise<Booking[]>;
+  adminDashboard(
+    skip: number,
+    take: number,
+  ): Promise<
+    Prisma.BookingGetPayload<{
+      select: {
+        id: true;
+        uuid: true;
+        booking_date: true;
+        start_time: true;
+        end_time: true;
+        status: true;
+        court: { select: { name: true } };
+      };
+    }>[]
+  >;
   findByUserId(
     user_id: number,
     skip: number,
     take: number,
-  ): Promise<Prisma.BookingGetPayload<{ include: { details: true } }>[]>;
+  ): Promise<
+    Prisma.BookingGetPayload<{
+      select: {
+        id: true;
+        uuid: true;
+        booking_date: true;
+        start_time: true;
+        end_time: true;
+        status: true;
+        court: { select: { name: true } };
+      };
+    }>[]
+  >;
 }
