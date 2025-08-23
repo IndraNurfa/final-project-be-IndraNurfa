@@ -66,6 +66,8 @@ PadelPal is a smart and seamless booking platform designed to make playing padel
 
 Below are the main tables and fields as implemented in the database:
 
+<img src="./docs/erd.png">
+
 ### Role
 
 | Field      | Type         | Constraints/Notes           |

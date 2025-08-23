@@ -75,9 +75,6 @@ export class CourtsService implements ICourtsService {
       dto.slug = slugify(dto.name, { lower: true });
     }
 
-    const cacheKey = `court:id:${id}`;
-    await this.cacheManager.del(cacheKey);
-
     if (dto.court_type_id) {
       const courtType = await this.courtRepo.findMasterTypeById(
         dto.court_type_id,
@@ -86,6 +83,11 @@ export class CourtsService implements ICourtsService {
         throw new NotFoundException('Court type not found');
       }
     }
+
+    const cacheKey = `court:id:${id}`;
+    const cacheAllKey = `courts`;
+    await this.cacheManager.del(cacheKey);
+    await this.cacheManager.del(cacheAllKey);
 
     return await this.courtRepo.updateMasterCourt(id, dto);
   }
