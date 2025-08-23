@@ -26,7 +26,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:8080',
-      'https://final-project-fe-indra-nurfa.vercel.app/',
+      'https://final-project-fe-indra-nurfa.vercel.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -34,9 +34,9 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-    .setTitle('PadelPal API')
+    .setTitle('Lobby Padel API')
     .setDescription(
-      'PadelPal is a smart and seamless booking platform designed to make playing padel effortless. With just a few taps, players can find, book, and manage padel courts anytime, anywhere.',
+      'Lobby Padel is a smart and seamless booking platform designed to make playing padel effortless. With just a few taps, players can find, book, and manage padel courts anytime, anywhere.',
     )
     .setVersion('1.0')
     .addTag('auth', 'Authentication endpoints')
