@@ -93,16 +93,14 @@ export class BookingsService implements IBookingsService {
 
       // Check if this slot conflicts with any existing booking
       const isBooked = existingBookings.some((booking) => {
-        // Convert UTC booking times to local timezone
-        const bookingStart = dayjs.utc(booking.start_time).tz(this.TIMEZONE);
-        const bookingEnd = dayjs.utc(booking.end_time).tz(this.TIMEZONE);
+        const startTimeUTC = new Date(booking.start_time);
+        const endTimeUTC = new Date(booking.end_time);
 
-        // Get booking time in minutes from start of day
         const bookingStartMinutes =
-          bookingStart.hour() * 60 + bookingStart.minute();
-        const bookingEndMinutes = bookingEnd.hour() * 60 + bookingEnd.minute();
+          startTimeUTC.getUTCHours() * 60 + startTimeUTC.getUTCMinutes();
+        const bookingEndMinutes =
+          endTimeUTC.getUTCHours() * 60 + endTimeUTC.getUTCMinutes();
 
-        // Check for overlap using standard interval overlap formula
         return (
           slotStartMinutes < bookingEndMinutes &&
           slotEndMinutes > bookingStartMinutes
@@ -170,6 +168,7 @@ export class BookingsService implements IBookingsService {
     }
 
     const cacheKey = `booking:available:${court_slug}:${date}`;
+
     const cachedBooking =
       await this.cacheManager.get<AvailabilityResponse>(cacheKey);
 
@@ -268,8 +267,14 @@ export class BookingsService implements IBookingsService {
     }
 
     const book_date = new Date(dto.booking_date);
-    const book_start = new Date(`${dto.booking_date}T${dto.start_time}`);
-    const book_end = new Date(`${dto.booking_date}T${dto.end_time}`);
+
+    // Create datetime objects in local timezone (database stores local times)
+    const book_start = dayjs
+      .tz(`${dto.booking_date} ${dto.start_time}`, this.TIMEZONE)
+      .toDate();
+    const book_end = dayjs
+      .tz(`${dto.booking_date} ${dto.end_time}`, this.TIMEZONE)
+      .toDate();
 
     const total_hour = this.getHourDifference(dto.end_time, dto.start_time);
 
