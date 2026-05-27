@@ -8,9 +8,9 @@ import {
 import { Booking, Prisma } from '@prisma/client';
 import { Cache } from 'cache-manager';
 import { randomUUID } from 'crypto';
-import * as dayjs from 'dayjs';
-import * as timezone from 'dayjs/plugin/timezone';
-import * as utc from 'dayjs/plugin/utc';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { ICourtsService } from 'src/courts/courts.interface';
 import { IBookingsRepository, IBookingsService } from './bookings.interface';
 import { CreateBookingDto } from './dto/create-booking.dto';
